@@ -4,21 +4,16 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+      inputs:
+        CACHE_TTL_SECONDS:
+          description: 'Number of seconds for scraper cache TTL. Default is 240 (4 minutes).'
+          required: false
+          default: 240
+          type: number
   schedule:
     - cron: '*/5 * * * *' # run every 5 minutes
     - cron: '15 * * * *' # every hour at :15 to catch any updates missed by the 5-minute schedule
     - cron: '0 0 * * *' # daily at midnight to catch any missed updates
-
-  workflow_call:
-    inputs:
-      # Optional input to control scraper caching behavior. By default, scrapers will cache results for 4 minutes (240 seconds).
-      # Setting this to a lower value (e.g. 60) can be useful for testing or if you want more frequent updates, but may increase load on the source website.
-      # Setting it to a higher value (e.g. 600) can reduce load and avoid hitting rate limits, but may result in less frequent updates.
-      CACHE_TTL_SECONDS:
-        description: 'Number of seconds for scraper cache TTL. Default is 240 (4 minutes).'
-        required: false
-        default: '240'
-        type: number
 
 permissions:
   contents: read
@@ -46,9 +41,9 @@ jobs:
         # are run explicitly above to ensure generated JSON files are present before
         # Astro's SSR/build phase (which reads them synchronously).
         run: |
-          export CACHE_TTL_SECONDS=${{ env.CACHE_TTL_SECONDS || '240' }}
-          mkdir -p public src/data
-          npm run build
+            export CACHE_TTL_SECONDS=${{ inputs.CACHE_TTL_SECONDS || github.event.inputs.CACHE_TTL_SECONDS || env.CACHE_TTL_SECONDS || '240' }}
+            mkdir -p public src/data
+            npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
