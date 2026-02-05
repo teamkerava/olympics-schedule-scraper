@@ -32,12 +32,6 @@ jobs:
           node-version: "20"
       - name: Install dependencies
         run: npm ci
-      - name: Fetch schedule (scrape) before build
-        run: |
-          # Force a fresh scrape in CI so public/ files exist
-          export CACHE_TTL_SECONDS=0
-          npm run fetch-schedule
-
       - name: Build
         # Use CACHE_TTL_SECONDS to avoid re-scraping when run frequently. The scrapers
         # are run explicitly above to ensure generated JSON files are present before
