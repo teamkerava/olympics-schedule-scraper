@@ -394,6 +394,7 @@ const formattedLastUpdated = lastUpdatedIso ? `Last updated: ${new Date(lastUpda
       .container { position: relative; max-width: 1200px; margin: 0 auto; padding: 20px; }
       header { text-align: center; margin-bottom: 30px; }
       h1 { color: #1a1a2e; margin-bottom: 8px; }
+      a { color: #003399; }
       .subtitle { color: #666; }
       .current-date { text-align: center; font-size: 22px; font-weight: bold; color: #333; margin: 20px 0; }
       .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -431,9 +432,9 @@ const formattedLastUpdated = lastUpdatedIso ? `Last updated: ${new Date(lastUpda
       <div class="timezone-note">All times are provided in Central European Time (CET)</div>
       <header>
         <h1>🏅 Milano Cortina 2026</h1>
-        <p class="subtitle">Winter Olympics Schedule from Olympics.com</p>
+        <p class="subtitle">Winter Olympics Schedule</p>
       </header>
-      <div class="update-note">{formattedLastUpdated}</div>
+      <div class="update-note">{formattedLastUpdated} - <a href="https://www.olympics.com/en/milano-cortina-2026/schedule" target="_blank">Source</a></div>
       <div class="current-date">{formattedDate}</div>
       
       <!-- Global live events for the day (full-width) -->

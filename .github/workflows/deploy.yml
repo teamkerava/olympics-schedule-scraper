@@ -9,8 +9,15 @@ on:
     - cron: '15 * * * *' # every hour at :15 to catch any updates missed by the 5-minute schedule
     - cron: '0 0 * * *' # daily at midnight to catch any missed updates
 
-env:
-  CACHE_TTL_SECONDS: 60
+  workflow_call:
+    input:
+      # Optional input to control scraper caching behavior. By default, scrapers will cache results for 4 minutes (240 seconds).
+      # Setting this to a lower value (e.g. 60) can be useful for testing or if you want more frequent updates, but may increase load on the source website.
+      # Setting it to a higher value (e.g. 600) can reduce load and avoid hitting rate limits, but may result in less frequent updates.
+      CACHE_TTL_SECONDS:
+        description: 'Number of seconds for scraper cache TTL. Default is 240 (4 minutes).'
+        required: false
+        default: '240'
 
 permissions:
   contents: read
