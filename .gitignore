@@ -1,0 +1,35 @@
+node_modules/
+.env
+.env.*
+.DS_Store
+.vscode/
+.idea/
+.cache/
+.turbo/
+.parcel-cache/
+dist/
+build/
+out/
+.nyc_output/
+coverage/
+*.log
+package-lock.json
+yarn.lock
+.pnp.*
+.vite/
+/.local-chromium/
+.astro/
+# Mac
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+
+# Generated data (if you keep them under src/data locally, remove these)
+src/data/*.json
+src/data/
+
+# Generated schedule files (ignore runtime outputs)
+public/*
+public/
