@@ -582,7 +582,7 @@ const formattedLastUpdated = lastUpdatedIso ? `Last updated: ${new Intl.DateTime
                   return (ta as Date).getTime() - (tb as Date).getTime();
                 });
 
-                if (upcomingEvents.length === 0 && pastEvents.length === 0) {
+                if (upcomingEvents.length === 0) {
                   return (<div class="empty">No upcoming events</div>);
                 }
 
