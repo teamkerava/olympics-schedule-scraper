@@ -63,7 +63,39 @@ if (!Array.isArray(scheduleData)) {
 }
 if (!Array.isArray(scheduleData)) scheduleData = [] as unknown as typeof scheduleData;
 
-const finnishAthletesData = loadJsonPreferRoot('finnish-athletes.json', '../data/finnish-athletes.json') || [];
+let finnishAthletesData = loadJsonPreferRoot('finnish-athletes.json', '../data/finnish-athletes.json') || [];
+// Fallback: if a dedicated finnish-athletes.json isn't available, try to derive
+// a simple athletes list from finnish-schedule.json which some scrapers produce.
+if ((!Array.isArray(finnishAthletesData) || (finnishAthletesData as any[]).length === 0)) {
+  try {
+    const maybeSchedule = loadJsonPreferRoot('finnish-schedule.json', '../data/finnish-schedule.json');
+    if (Array.isArray(maybeSchedule) && maybeSchedule.length > 0) {
+      const derived: any[] = [];
+      for (const day of maybeSchedule) {
+        const date = day.date;
+        if (!Array.isArray(day.events)) continue;
+        for (const ev of day.events) {
+          if (!ev || !ev.athletes) continue;
+          const names = (ev.athletes || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+          for (const nm of names) {
+            derived.push({ date, athletes: [{ athlete: nm, sport: ev.sport || '', event: ev.event || '', time: ev.time || '', dateIso: '', eventIso: '' }] });
+          }
+        }
+      }
+      // Convert derived array into grouped structure per-date
+      const grouped = new Map();
+      for (const item of derived) {
+        const d = item.date || '';
+        if (!grouped.has(d)) grouped.set(d, []);
+        for (const a of item.athletes) grouped.get(d).push(a);
+      }
+      const days = Array.from(grouped.entries()).map(([date, athletes]) => ({ date, athletes }));
+      finnishAthletesData = days;
+    }
+  } catch (e) {
+    // ignore fallback errors
+  }
+}
 // last-updated is usually written to public/last-updated.json by the scraper; try several locations
 const lastUpdated = loadJsonPreferRoot('last-updated.json', '../../public/last-updated.json') || {};
 
