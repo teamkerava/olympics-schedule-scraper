@@ -8,6 +8,9 @@ on:
     # run every 5 minutes
     - cron: '*/5 * * * *'
 
+env:
+  CACHE_TTL_SECONDS: 60
+
 permissions:
   contents: read
   pages: write
@@ -30,9 +33,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build
-        # Use CACHE_TTL_SECONDS to avoid re-scraping when run frequently.
+        # Use CACHE_TTL_SECONDS to avoid re-scraping when run frequently. The scrapers
+        # are run explicitly above to ensure generated JSON files are present before
+        # Astro's SSR/build phase (which reads them synchronously).
         run: |
           export CACHE_TTL_SECONDS=${{ env.CACHE_TTL_SECONDS || '240' }}
+          mkdir /public && mkdir /src/data
           npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -18,34 +18,54 @@ import path from 'path';
 
 // Load JSON files preferring project root copies when available (useful for built deployments).
 function loadJsonPreferRoot<T = any>(rootFilename: string, fallbackRel: string): T {
-  try {
-    const rootPath = path.join(process.cwd(), rootFilename);
-    if (fs.existsSync(rootPath)) {
-      const content = fs.readFileSync(rootPath, 'utf8');
-      return JSON.parse(content) as T;
+  // Try several locations in order:
+  // 1) process.cwd()/rootFilename (CI/root-level copy)
+  // 2) process.cwd()/public/rootFilename (when scraper writes to public/)
+  // 3) fallback relative to this file (dev: src/data)
+  // If nothing works return a safe default ({} or []).
+  const tryPaths = [
+    path.join(process.cwd(), rootFilename),
+    path.join(process.cwd(), 'public', rootFilename)
+  ];
+
+  for (const p of tryPaths) {
+    try {
+      if (fs.existsSync(p)) {
+        const content = fs.readFileSync(p, 'utf8');
+        return JSON.parse(content) as T;
+      }
+    } catch (e) {
+      // ignore and continue to next candidate
     }
-  } catch (e) {
-    // ignore and fall back
   }
 
   // Fall back to a path relative to this file (works in dev)
   try {
     const url = new URL(fallbackRel, import.meta.url);
+    if (fs.existsSync(url)) {
+      const content = fs.readFileSync(url, 'utf8');
+      return JSON.parse(content) as T;
+    }
+    // Node's fs.existsSync doesn't accept URL in some runtimes; try reading anyway
     const content = fs.readFileSync(url, 'utf8');
     return JSON.parse(content) as T;
   } catch (e) {
-    return {} as T;
+    // return a safe empty value: array for schedule files, object otherwise
+    // caller will normalize further.
+    return (Array.isArray(([] as unknown)) ? ([] as unknown as T) : ({} as T));
   }
 }
 
 let scheduleData = loadJsonPreferRoot('schedule.json', '../data/schedule.json');
-// prefer public/schedule.json if present (scraper writes to public/ during scraping)
-if (!Array.isArray(scheduleData) || (scheduleData as any[]).length === 0) {
+// If the returned value isn't an array, try a few more fallbacks and finally coerce to an empty array.
+if (!Array.isArray(scheduleData)) {
   scheduleData = loadJsonPreferRoot('public/schedule.json', '../data/schedule.json');
 }
-const finnishAthletesData = loadJsonPreferRoot('finnish-athletes.json', '../data/finnish-athletes.json');
-// last-updated is usually written to public/last-updated.json by the scraper; prefer root copy if present
-const lastUpdated = loadJsonPreferRoot('last-updated.json', '../../public/last-updated.json');
+if (!Array.isArray(scheduleData)) scheduleData = [] as unknown as typeof scheduleData;
+
+const finnishAthletesData = loadJsonPreferRoot('finnish-athletes.json', '../data/finnish-athletes.json') || [];
+// last-updated is usually written to public/last-updated.json by the scraper; try several locations
+const lastUpdated = loadJsonPreferRoot('last-updated.json', '../../public/last-updated.json') || {};
 
 interface FinnishAthlete {
   time: string;
