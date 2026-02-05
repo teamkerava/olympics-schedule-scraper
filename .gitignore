@@ -13,7 +13,6 @@ out/
 .nyc_output/
 coverage/
 *.log
-package-lock.json
 yarn.lock
 .pnp.*
 .vite/
