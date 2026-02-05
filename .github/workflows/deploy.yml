@@ -5,8 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    # run every 5 minutes
-    - cron: '*/5 * * * *'
+    - cron: '*/5 * * * *' # run every 5 minutes
+    - cron: '15 * * * *' # every hour at :15 to catch any updates missed by the 5-minute schedule
+    - cron: '0 0 * * *' # daily at midnight to catch any missed updates
 
 env:
   CACHE_TTL_SECONDS: 60

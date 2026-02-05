@@ -884,21 +884,26 @@ export async function scrapeScheduleFinnish(): Promise<DaySchedule[]> {
   // Write a last-updated timestamp so the frontend can show a real value
   try {
     const lastOut = fileURLToPath(new URL('../data/last-updated.json', import.meta.url));
-    const nowIso = new Date().toISOString();
+    // produce an ISO-like timestamp for Europe/Rome including offset (e.g. 2026-02-05T15:30:00+01:00)
+    function nowZoneIso(zone: string): string {
+      const now = new Date();
+      const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+      const parts = fmt.formatToParts(now).reduce((acc: any, p) => { acc[p.type] = p.value; return acc; }, {});
+      const y = parts.year; const mo = parts.month; const d = parts.day; const hh = parts.hour; const mm = parts.minute; const ss = parts.second;
+      const asUtc = Date.UTC(parseInt(y,10), parseInt(mo,10)-1, parseInt(d,10), parseInt(hh,10), parseInt(mm,10), parseInt(ss,10));
+      const offsetMinutes = Math.round((asUtc - now.getTime()) / 60000);
+      const sign = offsetMinutes >= 0 ? '+' : '-';
+      const abs = Math.abs(offsetMinutes);
+      const offH = String(Math.floor(abs / 60)).padStart(2,'0');
+      const offM = String(abs % 60).padStart(2,'0');
+      return `${y}-${mo}-${d}T${hh}:${mm}:${ss}${sign}${offH}:${offM}`;
+    }
+
+    const nowIso = nowZoneIso('Europe/Rome');
     await writeFile(lastOut, JSON.stringify({ iso: nowIso }, null, 2), 'utf8');
     console.log('Saved last-updated to', lastOut);
   } catch (err) {
     console.warn('Failed to save last-updated file:', err instanceof Error ? err.message : err);
-  }
-  try {
-    // Write to repository-root public/ directory. From src/scripts, ../../public
-    // resolves to <repo>/public.
-    const publicOut = fileURLToPath(new URL('../../public/last-updated.json', import.meta.url));
-    const nowIso2 = new Date().toISOString();
-    await writeFile(publicOut, JSON.stringify({ iso: nowIso2 }, null, 2), 'utf8');
-    console.log('Saved public last-updated to', publicOut);
-  } catch (err) {
-    console.warn('Failed to save public last-updated file:', err instanceof Error ? err.message : err);
   }
 
   // Check whether any event contains Finland (simple heuristic)
