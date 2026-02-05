@@ -822,6 +822,14 @@ async function scrapeOlympicsScheduleFinnish(): Promise<DaySchedule[]> {
     try {
       const outFile = fileURLToPath(new URL('../data/finnish-athletes.json', import.meta.url));
       await writeFile(outFile, JSON.stringify(athletes, null, 2), 'utf8');
+      console.log('Saved finnish athletes to', outFile);
+      try {
+        const publicAthletesOut = fileURLToPath(new URL('../../public/finnish-athletes.json', import.meta.url));
+        await writeFile(publicAthletesOut, JSON.stringify(athletes, null, 2), 'utf8');
+        console.log('Saved public finnish athletes to', publicAthletesOut);
+      } catch (err) {
+        console.warn('Failed to save public finnish athletes file:', err instanceof Error ? err.message : err);
+      }
     } catch (err) {
       console.warn('Failed to save finnish athletes file:', err instanceof Error ? err.message : err);
     }
@@ -853,6 +861,13 @@ export async function scrapeScheduleFinnish(): Promise<DaySchedule[]> {
     const outFile = fileURLToPath(new URL('../data/finnish-schedule.json', import.meta.url));
     await writeFile(outFile, JSON.stringify(schedule, null, 2), 'utf8');
     console.log('Saved finnish schedule to', outFile);
+    try {
+      const publicOut = fileURLToPath(new URL('../../public/finnish-schedule.json', import.meta.url));
+      await writeFile(publicOut, JSON.stringify(schedule, null, 2), 'utf8');
+      console.log('Saved public finnish schedule to', publicOut);
+    } catch (err) {
+      console.warn('Failed to save public finnish schedule file:', err instanceof Error ? err.message : err);
+    }
   } catch (err) {
     console.warn('Failed to save finnish schedule file:', err instanceof Error ? err.message : err);
   }
