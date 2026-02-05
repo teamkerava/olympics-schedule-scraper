@@ -557,11 +557,20 @@ async function getFinnishAthletesForToday(page: Page, schedules: DaySchedule[]):
             eventIso: eventIsoRaw || ''
           };
 
-          if (!grouped.has(dateStr)) grouped.set(dateStr, []);
-          const arr = grouped.get(dateStr)!;
-          // dedupe by athlete+event
-          const exists = arr.some((a: any) => a.athlete === athleteObj.athlete && a.event === athleteObj.event && a.time === athleteObj.time);
-          if (!exists) arr.push(athleteObj);
+          // Skip noisy/placeholder captures that have no useful scheduling data.
+          // Do not include entries that lack time, sport and an ISO event timestamp.
+          const isEmptyCapture = (!athleteObj.time || athleteObj.time.trim() === '')
+            && (!athleteObj.sport || athleteObj.sport.trim() === '')
+            && (!athleteObj.eventIso || athleteObj.eventIso.trim() === '');
+          if (isEmptyCapture) {
+            // skip adding this placeholder entry
+          } else {
+            if (!grouped.has(dateStr)) grouped.set(dateStr, []);
+            const arr = grouped.get(dateStr)!;
+            // dedupe by athlete+event
+            const exists = arr.some((a: any) => a.athlete === athleteObj.athlete && a.event === athleteObj.event && a.time === athleteObj.time);
+            if (!exists) arr.push(athleteObj);
+          }
         } catch {}
       }
 

@@ -25,7 +25,8 @@ yarn.lock
 *.tmp
 *.temp
 
-# Generated data (if you keep them under src/data locally, remove these)
+# Generated data
+public/
 src/data/*.json
 src/data/
 
