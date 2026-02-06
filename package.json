@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "astro": "^5.0.0",
-        "puppeteer": "^24.36.1"
+        "@cloudflare/puppeteer": "^1.0.6"
     },
     "devDependencies": {
         "tsx": "^4.21.0",

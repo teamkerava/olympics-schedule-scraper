@@ -1,4 +1,4 @@
-import puppeteer, { Browser } from 'puppeteer';
+import puppeteer, { Browser } from '@cloudflare/puppeteer';
 
 export const sportsList = [
   'Alpine Skiing', 'Snowboarding', 'Bobsleigh', 'Skeleton',

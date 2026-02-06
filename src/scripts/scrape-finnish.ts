@@ -1,4 +1,4 @@
-import puppeteer, { Browser, Page, ElementHandle } from 'puppeteer';
+import puppeteer, { Browser, Page, ElementHandle } from '@cloudflare/puppeteer';
 import { fileURLToPath } from 'url';
 import { writeFile, stat, readFile } from 'fs/promises';
 import { existsSync } from 'fs';
