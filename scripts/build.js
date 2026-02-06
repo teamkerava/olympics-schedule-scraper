@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-// Wrapper for the `build` script which conditionally runs the
-// fetch-schedule step. This avoids launching headless Chrome in
-// environments (like some CI providers / Pages) that lack necessary
-// system libraries.
+// ES module wrapper for build. Use SKIP_FETCH_SCHEDULE to avoid running
+// the Chrome-based fetch step in environments that don't provide the
+// native libraries required by Chromium.
 
-const { spawnSync } = require('child_process');
+import { spawnSync } from 'child_process';
 
 const skip = !!process.env.SKIP_FETCH_SCHEDULE;
 
@@ -13,7 +12,7 @@ if (!skip) {
   const res = spawnSync('npm', ['run', 'fetch-schedule'], { stdio: 'inherit', shell: true });
   if (res.status !== 0) {
     console.error('fetch-schedule failed, aborting build');
-    process.exit(res.status || 1);
+    process.exit(res.status ?? 1);
   }
 } else {
   console.log('SKIP_FETCH_SCHEDULE is set, skipping fetch-schedule');
@@ -21,4 +20,4 @@ if (!skip) {
 
 console.log('Running astro build...');
 const res2 = spawnSync('npx', ['astro', 'build'], { stdio: 'inherit', shell: true });
-if (res2.status !== 0) process.exit(res2.status || 1);
+if (res2.status !== 0) process.exit(res2.status ?? 1);
