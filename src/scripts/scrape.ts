@@ -1,4 +1,12 @@
-import puppeteer, { Browser } from '@cloudflare/puppeteer';
+// Helper: resolve a puppeteer module to use. Caller may provide the
+// Cloudflare module (imported in a Worker) or omit it to use regular
+// Node puppeteer. This keeps the scraping logic reusable in both
+// environments.
+async function getPuppeteerModule(override?: any): Promise<any> {
+  if (override) return (override && (override as any).default) || override;
+  const mod = await import('puppeteer');
+  return (mod && (mod as any).default) || mod;
+}
 
 export const sportsList = [
   'Alpine Skiing', 'Snowboarding', 'Bobsleigh', 'Skeleton',
@@ -170,13 +178,20 @@ function formatDate(dateStr: string): string {
   }
 }
 
-async function scrapeOlympicsSchedule(): Promise<DaySchedule[]> {
+async function scrapeOlympicsSchedule(opts?: { puppeteerModule?: any; browserBinding?: any; keepAlive?: number; location?: string }): Promise<DaySchedule[]> {
   console.log('Launching browser...');
-  
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-  });
+  const pupp = await getPuppeteerModule(opts?.puppeteerModule);
+
+  let browser: Browser;
+  if (opts && opts.browserBinding) {
+    // Cloudflare Workers binding: launch with the binding as first arg
+    browser = await puppeteerLaunchWithBinding(pupp, opts.browserBinding, { keep_alive: opts.keepAlive, location: opts.location });
+  } else {
+    browser = await pupp.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+    });
+  }
 
   try {
     const page = await browser.newPage();
@@ -384,6 +399,22 @@ async function scrapeOlympicsSchedule(): Promise<DaySchedule[]> {
   } finally {
     await browser.close();
   }
+}
+
+// Small helper to call launch correctly depending on the puppeteer
+// implementation. The Cloudflare fork expects (binding, options).
+async function puppeteerLaunchWithBinding(pupp: any, binding: any, options?: { keep_alive?: number; location?: string; }) {
+  // prefer the fork's launch signature
+  if (typeof pupp.launch === 'function') {
+    try {
+      // when using Cloudflare's fork, pass the binding first
+      return await pupp.launch(binding, options || {});
+    } catch (e) {
+      // fall through to try alternative call
+    }
+  }
+  // fallback: try calling with an options object (Node puppeteer)
+  return await pupp.launch(options || {});
 }
 
 export async function scrapeSchedule(): Promise<DaySchedule[]> {

@@ -1,4 +1,20 @@
-import puppeteer, { Browser, Page, ElementHandle } from '@cloudflare/puppeteer';
+// runtime-selectable puppeteer import: prefer cloudflare binding when
+// running in a Cloudflare-like environment, otherwise use local puppeteer.
+const _isCloudflare = !!process.env.MYBROWSER || !!process.env.CLOUDFLARE_WORKER;
+let puppeteer: any;
+try {
+  if (_isCloudflare) {
+    const mod = await import('@cloudflare/puppeteer');
+    puppeteer = (mod && (mod as any).default) || mod;
+  } else {
+    const mod = await import('puppeteer');
+    puppeteer = (mod && (mod as any).default) || mod;
+  }
+} catch (e) {
+  const mod = await import('puppeteer');
+  puppeteer = (mod && (mod as any).default) || mod;
+}
+import type { Browser, Page, ElementHandle } from 'puppeteer';
 import { fileURLToPath } from 'url';
 import { writeFile, stat, readFile } from 'fs/promises';
 import { existsSync } from 'fs';
