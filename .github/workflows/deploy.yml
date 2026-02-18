@@ -10,10 +10,10 @@ on:
           required: false
           default: 240
           type: number
-  schedule:
-    - cron: '*/5 * * * *' # run every 5 minutes
-    - cron: '15 * * * *' # every hour at :15 to catch any updates missed by the 5-minute schedule
-    - cron: '0 0 * * *' # daily at midnight to catch any missed updates
+#  schedule:
+#    - cron: '*/5 * * * *' # run every 5 minutes
+#    - cron: '15 * * * *' # every hour at :15 to catch any updates missed by the 5-minute schedule
+#    - cron: '0 0 * * *' # daily at midnight to catch any missed updates
 
 permissions:
   contents: read
